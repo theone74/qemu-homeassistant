@@ -1,0 +1,92 @@
+{
+  "builders": [
+    {
+      "boot_command": [
+        "root<enter><wait>",
+        "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
+        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+        "setup-apkrepos -1<enter><wait5>",
+        "ERASE_DISKS='/dev/vda' setup-alpine -f $PWD/answers<enter><wait5>",
+        "{{user `ssh_password`}}<enter><wait>",
+        "{{user `ssh_password`}}<enter><wait40>",
+        "rc-service sshd stop<enter>",
+        "mount /dev/vda3 /mnt<enter>",
+        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
+        "umount /mnt ; reboot <enter>"
+      ],
+      "boot_wait": "10s",
+      "communicator": "ssh",
+      "disk_size": "{{user `disk_size`}}",
+      "format": "qcow2",
+      "headless": true,
+      "http_directory": ".",
+      "iso_checksum": "{{user `iso_checksum_type`}}:{{user `iso_checksum`}}",
+      "iso_urls": ["{{user `iso_local_url`}}", "{{user `iso_download_url`}}"],
+      "shutdown_command": "/sbin/poweroff",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_timeout": "10m",
+      "ssh_username": "root",
+      "type": "qemu",
+
+      "qemuargs": [[ "-m", "{{user `memory`}}M" ],[ "-smp", "{{user `cpus`}}" ]],
+      "http_port_min": 10082,
+      "http_port_max": 10089,
+      "host_port_min": 2222,
+      "host_port_max": 2229,
+      "disk_interface": "virtio",
+      "disk_cache": "none",
+      "accelerator": "kvm",
+      "qemu_binary": "/usr/bin/qemu-system-x86_64",
+      "net_device": "virtio-net",
+      "output_directory": "output",
+
+      "vnc_bind_address": "0.0.0.0",
+      "vnc_port_min": 5910,
+      "vnc_port_max": 5910
+    }
+  ],
+  "description": "Build base Alpine Linux x86_64",
+  "provisioners": [
+    {
+      "inline": [
+        "echo http://dl-cdn.alpinelinux.org/alpine/v3.14/community >> /etc/apk/repositories",
+        "apk update",
+        "apk add docker docker-compose git tzdata",
+        "cp /usr/share/zoneinfo/Europe/Vilnius /etc/localtime",
+        "echo 'Europe/Vilnius' >  /etc/timezone",
+        "date",
+        "git clone https://github.com/MonolithProjects/hassio_docker-compose.git hassio",
+        "rc-update add docker boot",
+        "service docker start",
+        "echo 'host0   /data    9p      trans=virtio,version=9p2000.L   0 0' >> /etc/fstab",
+        "cd hassio ; SUPERVISOR_SHARE=/data docker-compose up -d",
+        "sleep 30s"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "cpus": "1",
+    "disk_size": "10240",
+    "iso_checksum": "d568c6c71bb1eee0f65cdf40088daf57032e24f1e3bd2cf8a813f80d2e9e4eab",
+    "iso_checksum_type": "sha256",
+    "iso_download_url": "http://dl-cdn.alpinelinux.org/alpine/v3.14/releases/x86_64/alpine-virt-3.14.0-x86_64.iso",
+    "iso_local_url": "../../iso/alpine-virt-3.14.0-x86_64.iso",
+    "memory": "512",
+    "root_password": "",
+    "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key",
+    "ssh_password": "root",
+    "ssh_username": "root",
+    "vm_name": "alpine-3.14.0-x86_64"
+  },
+  "post-processors": [
+    {
+      "type": "shell-local",
+      "inline": [
+        "ls -l output",
+        "mv output/packer-qemu alpine.qcow2",
+        "rm -rf output/"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+services:
+
+  homeassistant:
+    image: qemu-homeassistant
+    container_name: homeassistant
+    hostname: homeassistant
+    restart: unless-stopped
+    network_mode: "host"
+    environment:
+      QEMU_CPU: 2
+      QEMU_RAM: 1024
+    volumes:
+      - ./data:/data
