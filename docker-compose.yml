@@ -1,13 +1,15 @@
 services:
 
   homeassistant:
-    image: qemu-homeassistant
+    image: theone74/qemu-homeassistant:latest
     container_name: homeassistant
     hostname: homeassistant
     restart: unless-stopped
-    network_mode: "host"
+    network_mode: host
+    privileged: true
     environment:
       QEMU_CPU: 2
       QEMU_RAM: 1024
     volumes:
+      - /dev/kvm:/dev/kvm
       - ./data:/data
