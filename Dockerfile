@@ -17,4 +17,4 @@ ENV QEMU_NO_SERIAL 1
 EXPOSE 8123
           
 
-CMD [ "start-qemu", "-virtfs", "local,path=/data,mount_tag=host0,security_model=passthrough,id=host0" ]
+ENTRYPOINT [ "start-qemu", "-virtfs", "local,path=/data,mount_tag=host0,security_model=passthrough,id=host0" ]
