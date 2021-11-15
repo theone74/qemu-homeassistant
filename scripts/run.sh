@@ -34,4 +34,4 @@ docker run -it --rm \
 	-v `pwd`/data:/data \
 	-e QEMU_CPU=2 \
 	-e QEMU_RAM=1024 \
-	qha
+	theone74/qemu-homeassistant:latest
