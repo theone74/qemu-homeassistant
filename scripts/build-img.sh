@@ -21,4 +21,3 @@ docker run --rm \
   -v `pwd`:/opt/ \
   -w /opt/ goffinet/packer-qemu build alpine.json
 
-docker build -t qemu-homeassistant .
