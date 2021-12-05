@@ -33,5 +33,5 @@ docker run -it --rm \
 	--network host \
 	-v `pwd`/data:/data \
 	-e QEMU_CPU=2 \
-	-e QEMU_RAM=1024 \
+	-e QEMU_RAM=2048 \
 	theone74/qemu-homeassistant:latest
